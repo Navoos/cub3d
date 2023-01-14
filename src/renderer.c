@@ -3,19 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   renderer.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yakhoudr <yakhoudr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/10 11:53:41 by yakhoudr         ###   ########.fr       */
+/*   Updated: 2023/01/11 12:55:28by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cub3D.h"
+#include "../include/cub3D.h"
+#define COLOR 0xcfa34ff
 #define WIDTH 1080
 #define HEIGHT 720
 
 inline 	double radians(double angle)
-
 {
 	return (angle * (M_PI / (double)180));
 }
@@ -309,8 +309,7 @@ void	redraw(t_cub_manager *manager)
 	for (int i = 0; i < num_of_rays; ++i)
     {
 		normalize_angle(&angle);
-		double dist = calculate_line_intersection(angle, manager, &wall_hitx, &wall_hity);
-		dist = dist * cos(angle - manager->player.rotation_angle);
+		double dist = calculate_line_intersection(angle, manager, &wall_hitx, &wall_hity) * cos(angle - manager->player.rotation_angle);
 		double height = (NORMAL_TILE / dist) * distProj;
 		double alpha = dist / (double)(manager->map->map_width * NORMAL_TILE);
 		// draw 3D
@@ -319,30 +318,30 @@ void	redraw(t_cub_manager *manager)
 		// draw_line(round(manager->player.x), round(manager->player.y), (wall_hitx), (wall_hity), manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, 0x0000ff00);
 		angle += (radians(FOV) / (double)num_of_rays);
 	}
-	while (++i < manager->map->map_height)
-	{
-		long j = -1;
-		int ii = i * MAP_TILE * SCALING_FACTOR;
-		while (++j < ft_strlen(manager->map->map[i]))
-		{
-			double jj = j * MAP_TILE * SCALING_FACTOR;
-			if (manager->map->map[i][j] == '1')
-				draw_full_rect(jj , ii, MAP_TILE * SCALING_FACTOR, MAP_TILE * SCALING_FACTOR, manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, create_trgb(1, 0, 255,0));
-				//  draw_empty_rect(jj, ii, MAP_TILE, MAP_TILE, manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, manager->map->wall_colors);
-		}
-	}
+	// while (++i < manager->map->map_height)
+	// {
+	// 	long j = -1;
+	// 	int ii = i * MAP_TILE * SCALING_FACTOR;
+	// 	while (++j < ft_strlen(manager->map->map[i]))
+	// 	{
+	// 		double jj = j * MAP_TILE * SCALING_FACTOR;
+	// 		if (manager->map->map[i][j] == '1')
+	// 			draw_full_rect(jj , ii, MAP_TILE * SCALING_FACTOR, MAP_TILE * SCALING_FACTOR, manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, create_trgb(1, 0, 255,0));
+	// 			//  draw_empty_rect(jj, ii, MAP_TILE, MAP_TILE, manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, manager->map->wall_colors);
+	// 	}
+	// }
+	_render_minimap(manager);
 	// draw_line( manager->player.x * SCALING_FACTOR,  manager->player.y * SCALING_FACTOR,
 	// SCALING_FACTOR * manager->player.x + LINE_LENGTH * cos(manager->player.rotation_angle),
 	// SCALING_FACTOR * manager->player.y + LINE_LENGTH * sin(manager->player.rotation_angle),
 	// manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, 0x00ff0000);
 	for (int i = 0;i < num_of_rays;++i)
-	// for (int i = 0;i < 1;++i)
 	{
-		// printf("%lf\n", round(wall_hits->x * SCALING_FACTOR));
 		draw_line(round(manager->player.x * SCALING_FACTOR) , round(manager->player.y * SCALING_FACTOR), round(wall_hits->x * SCALING_FACTOR), round(wall_hits->y * SCALING_FACTOR), manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, 0x00ab0000);
 		wall_hits = wall_hits->next;
 	}
 }
+
 int controls(int keycode, t_cub_manager *manager)
 {
 	if (keycode == 123)
@@ -482,6 +481,98 @@ long	get_map_height(t_map_manager *map_manager)
 	return (i);
 }
 
+int	__get_needed_rows(t_cub_manager* manager)
+{
+	int needed_rows ;
+
+	needed_rows = MINIMAP_HEIGHT / 2;
+	if (manager->player.y / TILE_SIZE + needed_rows <= manager->map->map_height)
+		return (0);
+	return ((manager->player.y / TILE_SIZE + needed_rows) - manager->map->map_height);
+}
+
+int	__get_needed_cols(t_cub_manager* manager)
+{
+	int needed_cols;
+
+	needed_cols = MINIMAP_WIDTH / 2;
+	if (manager->player.x / TILE_SIZE + needed_cols <= manager->map->map_width)
+		return 0;
+	return ((manager->player.x / TILE_SIZE + needed_cols));
+}
+
+void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
+{
+	char	*dst;
+
+	dst = data->addr + (y * data->line_length + x * (data->bits_per_pixel / 8));
+	*(unsigned int*)dst = color;
+}
+
+void	draw_square(t_cub_manager* manager, int x, int y, int color, int length)
+{
+	int	i;
+
+	i = 0;
+	while (i <= length)
+    {
+        my_mlx_pixel_put(manager->mlx_manager.mlx_img, x, y + i, COLOR);
+        my_mlx_pixel_put(manager->mlx_manager.mlx_img, x + length, y + i, COLOR);
+        my_mlx_pixel_put(manager->mlx_manager.mlx_img, x + i, y, COLOR);
+        my_mlx_pixel_put(manager->mlx_manager.mlx_img, x + i, y + length, COLOR);
+    }
+}
+
+void	fill_square(t_cub_manager* manager, int x, int y, int length, int color)
+{
+	int	i;
+	int	j;
+
+	j = y;
+	while (j < y + length)
+	{
+		i = x;
+		while (i < x + length)
+			my_mlx_pixel_put(manager->mlx_manager.mlx_img, i, j, color);
+	}
+}
+
+int	normalize_index(int index)
+{
+	if (index < 0)
+		return (0);
+	return (index);
+}
+
+#define MINIMAP_HEIGHT (HEIGHT / TILE_SIZE)
+#define MINIMAP_WIDTH (WIDTH / TILE_SIZE)
+
+void	_render_minimap(t_cub_manager* manager)
+{
+	int				x_index;
+	int				x;
+	int				y_index;
+	t_needed_lines	needed_lines;
+	int				color;
+
+	needed_lines.needed_cols = MINIMAP_WIDTH;
+	needed_lines.needed_rows = MINIMAP_HEIGHT;
+	y_index = normalize_index(manager->player.y / TILE_SIZE - (MINIMAP_HEIGHT / 2 + __get_needed_rows(manager)));
+	x_index = normalize_index(manager->player.x / TILE_SIZE - (MINIMAP_WIDTH / 2 + __get_needed_cols(manager)));
+	while (y_index < manager->map->map_height && needed_lines.needed_rows--)
+	{
+		x = x_index;
+		while (x < manager->map->map_width && needed_lines.needed_cols--)
+		{
+			if (manager->map->map[y_index][x] == '1')
+				color = 0x00ffffff;
+			else
+				color = 0x0;
+			fill_square(manager, x * TILE_SIZE * SCALING_FACTOR, y_index * TILE_SIZE * SCALING_FACTOR, TILE_SIZE * SCALING_FACTOR, color);
+		}
+	}
+}
+
 void	render(t_map_manager	*map_manager)
 {
 	long	map_width;
@@ -492,13 +583,14 @@ void	render(t_map_manager	*map_manager)
 	cub_manager.map = map_manager;
 	cub_manager.mlx_manager.mlx = mlx_init();
     cub_manager.map->wall_colors = 0x00ffffff;
-	// mlx_window = mlx_new_window(mlx, WIDTH, HEIGHT, "cub3D");
+	// mlx_window = mlx_new_window(mlx, width, height, "cub3d");
 	cub_manager.map->map_width = map_width = get_map_width(cub_manager.map);
 	// printf("%ld\n", map_width);
 	map_height = get_map_height(cub_manager.map);
 	// clear_window(mlx, mlx_window, create_trgb(0, 255, 255, 255));
 	draw_grid(map_width, map_height, &cub_manager);
 	// printf("%ld\n", map_height);
-	mlx_hook(cub_manager.mlx_manager.mlx_window, 2, 1L<<0, controls, &cub_manager);
+	mlx_hook(cub_manager.mlx_manager.mlx_window, 2, 1l<<0, controls, &cub_manager);
 	mlx_loop(cub_manager.mlx_manager.mlx);
 }
+// TODO: render minimap dynamicly then change mlx_pixel to my_mlx_pixel_put

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3D.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yakhoudr <yakhoudr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/08 11:46:10 by yakhoudr         ###   ########.fr       */
+/*   Updated: 2023/01/14 16:14:37 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,10 +61,20 @@ typedef struct s_map_manager
 	int			map_height;
 }	t_map_manager;
 
+//mlx image struct
+typedef struct	s_data {
+	void	*img;
+	char	*addr;
+	int		bits_per_pixel;
+	int		line_length;
+	int		endian;
+}				t_data;
+
 typedef struct s_mlx_manager
 {
 	void	*mlx;
 	void	*mlx_window;
+	t_data	*mlx_img;//mlx image object, allocate needed memory for this pointer before using it
 }t_mlx_manager;
 
 typedef struct s_player
@@ -85,9 +95,17 @@ typedef struct s_cub_manager
 	t_mlx_manager	mlx_manager;
 }	t_cub_manager;
 
+typedef struct s_needed_lines
+{
+	int	needed_rows;
+	int	needed_cols;
+}	t_needed_lines;
+
 char	**ft_split(char *s, char c);
 int		ft_atoi(char *str);
 void	panic(const char *str);
 void	render(t_map_manager *map_manager);
 int		create_trgb(int t, int r, int g, int b);
+void	_render_minimap(t_cub_manager* manager);
+
 #endif
