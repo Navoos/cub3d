@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yakhoudr <yakhoudr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 15:59:25 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/10 15:09:33 by yakhoudr         ###   ########.fr       */
+/*   Updated: 2023/01/15 21:02:51 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,7 +183,6 @@ void	check_horizonal_borders(char **map, int index)
 
 // 	begin = get_begin(map, index);
 // 	end = get_end(map, index);
-	
 // }
 
 long _norm_check_valid_space(long *i, char **map, long j, long *line_size)
@@ -575,9 +574,7 @@ void	parse_map_file(int map_fd, char *file)
 	if (map_manager->f == -1 || map_manager->c == -1 || !map_manager->no || !map_manager->so
 	|| !map_manager->we || !map_manager->ea)
 		panic("Error: can't retrieve assets");
-	// printf("%ld\n", skip);
 	map_lines = get_map_size(map_fd, &map_line);
-	// printf("%d\n", map_lines);
 	if (map_lines < 3)
 		panic("Error: invalid map");
 	map = malloc(sizeof(char *) * (map_lines + 1));
@@ -594,8 +591,6 @@ void	parse_map_file(int map_fd, char *file)
 		exit(EXIT_FAILURE);
 	fill_map(map, map_fd, map_lines);
 	map_manager->c_player = check_map_characters(map);
-	// for (unsigned int i = 0;i < map_lines;i += 1)
-	// 	printf("%s\n", map[i]);
 	check_validity_of_map(map, map_lines);
 	map_manager->map = map;
 	render(map_manager);

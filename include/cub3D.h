@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/14 16:14:37 by osallak          ###   ########.fr       */
+/*   Updated: 2023/01/15 21:02:30 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,6 @@ typedef struct s_map_manager
 	int			map_height;
 }	t_map_manager;
 
-//mlx image struct
 typedef struct	s_data {
 	void	*img;
 	char	*addr;
@@ -74,7 +73,7 @@ typedef struct s_mlx_manager
 {
 	void	*mlx;
 	void	*mlx_window;
-	t_data	*mlx_img;//mlx image object, allocate needed memory for this pointer before using it
+	t_data	*mlx_img;
 }t_mlx_manager;
 
 typedef struct s_player

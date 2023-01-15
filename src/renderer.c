@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/11 12:55:28by osallak          ###   ########.fr       */
+/*   Updated: 2023/01/15 21:02:37 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,6 +392,7 @@ int controls(int keycode, t_cub_manager *manager)
 	return 0;	
 }
 
+void	render_mini_map()
 void	draw_grid(long map_width, long map_height, t_cub_manager * cub_manager)
 {
 	cub_manager->mlx_manager.mlx_window = mlx_new_window(cub_manager->mlx_manager.mlx, map_width * NORMAL_TILE, map_height * NORMAL_TILE, "cub3D");
