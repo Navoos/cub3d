@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   renderer.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yakhoudr <yakhoudr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/24 12:41:11 by yakhoudr         ###   ########.fr       */
+/*   Updated: 2023/01/24 21:36:48 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,7 +214,7 @@ int controls(int key, t_cub_manager	*manager)
 		// printf("hooray\n");
 		
 	}
-	else if (key == 126)
+	if (key == 126)
 	{
 		manager->player.walk_direction = 1;
 		fx = manager->player.x + manager->player.walk_speed * cos(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
@@ -571,6 +571,17 @@ void	cast_all_rays(t_cub_manager* manager)
 // 	}
 // }
 
+void	__render_ceiling(t_cub_manager* manager, int x, int wallTopPixel)
+{
+		for (int y = 0; y < wallTopPixel; y++)
+			cub_mlx_pixel_put(&manager->mlx_manager.img_data, x, y, WIDTH, HEIGHT, manager->map->c);
+}
+
+void	__render_floor(t_cub_manager* manager, int x, int wallBottomPixel)
+{
+		for (int y = wallBottomPixel; y < HEIGHT; y++)
+			cub_mlx_pixel_put(&manager->mlx_manager.img_data, x, y, WIDTH, HEIGHT, manager->map->f);
+}
 void	rendering_3d_walls(t_cub_manager* manager)
 {
 	    for (int i = 0; i < NUMBER_OF_RAYS; i++) {
@@ -593,6 +604,8 @@ void	rendering_3d_walls(t_cub_manager* manager)
 		{
 			cub_mlx_pixel_put(&manager->mlx_manager.img_data, i * WALL_STRIP_WIDTH, j, WIDTH, HEIGHT, 0x00ffffff);
 		}
+		__render_ceiling(manager, i, wallTopPixel);
+		__render_floor(manager, i, wallBottomPixel);
     }
 }
 
