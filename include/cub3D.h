@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3D.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yakhoudr <yakhoudr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/24 11:55:02 by yakhoudr         ###   ########.fr       */
+/*   Updated: 2023/01/26 10:05:46 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@
 # define MINIMAP_X 10
 # define MINIMAP_Y 10
 # define NUMBER_OF_RAYS (WIDTH / WALL_STRIP_WIDTH)
+# define TEXTURE_WIDTH 30
+# define TEXTURE_HEIGHT 30
 typedef struct	s_img_data {
 	void	*img;
 	char	*addr;
@@ -84,6 +86,11 @@ typedef struct s_mlx_manager
 	void		*mlx;
 	void		*mlx_window;
 	t_img_data	img_data;
+	void		*south_texture;
+	void		*north_texture;
+	void		*east_texture;
+	void		*west_texture;
+	int			*test_texture;//TODO: work with the textures parsed from the map
 }t_mlx_manager;
 
 typedef struct s_player

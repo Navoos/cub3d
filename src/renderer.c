@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/24 21:36:48 by osallak          ###   ########.fr       */
+/*   Updated: 2023/01/26 10:21:48 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -598,13 +598,25 @@ void	rendering_3d_walls(t_cub_manager* manager)
 
         int wallBottomPixel = (HEIGHT / 2) + (wallStripHeight / 2);
         wallBottomPixel = wallBottomPixel > HEIGHT ? HEIGHT : wallBottomPixel;
+		// render cieling 
+		__render_ceiling(manager, i, wallTopPixel);
 
         // render the wall from wallTopPixel to wallBottomPixel
+		
+		int texture_offset_x;
+		if (manager->rays[i].wasHitVertical == true)
+			texture_offset_x = (int) manager->rays[i].wallHitY % TEXTURE_HEIGHT;
+		else
+			texture_offset_x = (int) manager->rays[i].wallHitX % TEXTURE_WIDTH;
         for (int j = wallTopPixel; j < wallBottomPixel;++j)
 		{
-			cub_mlx_pixel_put(&manager->mlx_manager.img_data, i * WALL_STRIP_WIDTH, j, WIDTH, HEIGHT, 0x00ffffff);
+			int distance_from_top = j + (wallStripHeight / 2) - (HEIGHT / 2);
+			int texture_offset_y = distance_from_top * ((double)TEXTURE_HEIGHT / wallStripHeight);
+			int pixel_color = ((int *)manager->mlx_manager.north_texture)[TEXTURE_WIDTH * texture_offset_y + texture_offset_x];
+			cub_mlx_pixel_put(&manager->mlx_manager.img_data, i * WALL_STRIP_WIDTH, j, WIDTH, HEIGHT, pixel_color);
 		}
-		__render_ceiling(manager, i, wallTopPixel);
+	
+		// render floor 
 		__render_floor(manager, i, wallBottomPixel);
     }
 }
@@ -668,6 +680,13 @@ int render(t_map_manager *map_manager)
 	manager.mlx_manager.img_data.img = mlx_new_image(manager.mlx_manager.mlx, WIDTH, HEIGHT);
 	manager.mlx_manager.img_data.addr = mlx_get_data_addr(manager.mlx_manager.img_data.img, &manager.mlx_manager.img_data.bits_per_pixel, &manager.mlx_manager.img_data.line_length, &manager.mlx_manager.img_data.endian);
 	manager.rays = malloc(NUMBER_OF_RAYS * sizeof(t_ray));
+	int texture_width = TEXTURE_WIDTH;
+	int texture_height = TEXTURE_HEIGHT;
+	manager.mlx_manager.north_texture = mlx_xpm_file_to_image(manager.mlx_manager.mlx, "/Users/osallak/Desktop/normed-version-cub3d/assests/north_texture.xpm", &texture_width, &texture_height);
+	if (manager.mlx_manager.north_texture == NULL){
+		perror("687");
+		exit(1);
+	}
 	draw(&manager);
 	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYDOWN, 1L<<0, controls, &manager);
 	mlx_loop(manager.mlx_manager.mlx);
