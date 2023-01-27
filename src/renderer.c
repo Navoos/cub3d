@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/26 10:21:48 by osallak          ###   ########.fr       */
+/*   Updated: 2023/01/27 00:58:55 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -621,6 +621,14 @@ void	rendering_3d_walls(t_cub_manager* manager)
     }
 }
 
+
+int	__load_textures(t_cub_manager* manager)
+{
+	manager->mlx_manager.north_texture.img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, manager->map->no, &manager->mlx_manager.north_texture.texture_width,  &manager->mlx_manager.north_texture.texture_width);
+	
+	return (EXIT_SUCCESS);
+}
+
 int render(t_map_manager *map_manager)
 {
 	int	i;
@@ -679,10 +687,11 @@ int render(t_map_manager *map_manager)
 	manager.mlx_manager.mlx_window = mlx_new_window(manager.mlx_manager.mlx, WIDTH, HEIGHT, "cub3D");
 	manager.mlx_manager.img_data.img = mlx_new_image(manager.mlx_manager.mlx, WIDTH, HEIGHT);
 	manager.mlx_manager.img_data.addr = mlx_get_data_addr(manager.mlx_manager.img_data.img, &manager.mlx_manager.img_data.bits_per_pixel, &manager.mlx_manager.img_data.line_length, &manager.mlx_manager.img_data.endian);
+	__load_textures(&manager);
 	manager.rays = malloc(NUMBER_OF_RAYS * sizeof(t_ray));
 	int texture_width = TEXTURE_WIDTH;
 	int texture_height = TEXTURE_HEIGHT;
-	manager.mlx_manager.north_texture = mlx_xpm_file_to_image(manager.mlx_manager.mlx, "/Users/osallak/Desktop/normed-version-cub3d/assests/north_texture.xpm", &texture_width, &texture_height);
+	manager.mlx_manager.north_texture = mlx_xpm_file_to_image(manager.mlx_manager.mlx, "/Users/ysahih/Desktop/cub3d/assests/north_texture.xpm", &texture_width, &texture_height);
 	if (manager.mlx_manager.north_texture == NULL){
 		perror("687");
 		exit(1);

@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/26 10:05:46 by osallak          ###   ########.fr       */
+/*   Updated: 2023/01/27 00:53:37 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@ typedef struct	s_img_data {
 	int		bits_per_pixel;
 	int		line_length;
 	int		endian;
+	int		texture_width;
+	int		texture_height;
 }				t_img_data;
 
 typedef struct s_quadri_long
@@ -83,13 +85,13 @@ typedef struct s_map_manager
 
 typedef struct s_mlx_manager
 {
-	void		*mlx;
-	void		*mlx_window;
-	t_img_data	img_data;
-	void		*south_texture;
-	void		*north_texture;
-	void		*east_texture;
-	void		*west_texture;
+	void			*mlx;
+	void			*mlx_window;
+	t_img_data		img_data;
+	t_img_data		south_texture;
+	t_img_data		north_texture;
+	t_img_data		east_texture;
+	t_img_data		west_texture;
 	int			*test_texture;//TODO: work with the textures parsed from the map
 }t_mlx_manager;
 
