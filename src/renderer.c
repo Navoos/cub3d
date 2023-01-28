@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/27 00:58:55 by osallak          ###   ########.fr       */
+/*   Updated: 2023/01/28 01:41:20 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -582,6 +582,47 @@ void	__render_floor(t_cub_manager* manager, int x, int wallBottomPixel)
 		for (int y = wallBottomPixel; y < HEIGHT; y++)
 			cub_mlx_pixel_put(&manager->mlx_manager.img_data, x, y, WIDTH, HEIGHT, manager->map->f);
 }
+
+t_img_data __select_the_right_texture(t_cub_manager* manager, int ray_index)
+{
+	if (manager->rays[ray_index].wasHitVertical && manager->rays[ray_index].isRayFacingRight)
+		return (manager->mlx_manager.east_texture);
+	if (manager->rays[ray_index].wasHitVertical && manager->rays[ray_index].isRayFacingLeft)
+		return (manager->mlx_manager.west_texture);
+	if (!manager->rays[ray_index].wasHitVertical && manager->rays[ray_index].isRayFacingUp)
+		return (manager->mlx_manager.north_texture);
+	return (manager->mlx_manager.south_texture);
+}
+
+int	__get_x_offset(t_cub_manager* manager, int ray_id, t_img_data texture)
+{
+	// (void) texture;
+	if (manager->rays[ray_id].wasHitVertical)
+		return ((fmod(manager->rays[ray_id].wallHitX, TILE_SIZE) / TILE_SIZE) * texture.texture_width);
+	return (fmod(manager->rays[ray_id].wallHitY, TILE_SIZE));
+}
+
+int	__get_y_offset(int wall_strip_height, int y)
+{
+	int	dis_from_top;
+
+	dis_from_top = y + (wall_strip_height / 2) - (HEIGHT / 2);//TODO: CHECK THIS (brackets may not closed probably)
+	return (dis_from_top * ((double)TILE_SIZE / wall_strip_height));
+}
+
+uint32_t	__get_pixel_color(t_cub_manager* manager, int ray_id, int wall_strip_height, int y)
+{
+	int			offset_x;
+	int			offset_y;
+	t_img_data	texture;
+	int			color;
+
+	texture = __select_the_right_texture(manager, ray_id);
+	offset_x = __get_x_offset(manager, ray_id, texture);
+	offset_y = __get_y_offset(wall_strip_height, y);
+	color = *(int *)(texture.addr + (offset_y * texture.texture_width + offset_x) * (texture.bits_per_pixel / 8));
+	return (color);	
+}
 void	rendering_3d_walls(t_cub_manager* manager)
 {
 	    for (int i = 0; i < NUMBER_OF_RAYS; i++) {
@@ -603,17 +644,9 @@ void	rendering_3d_walls(t_cub_manager* manager)
 
         // render the wall from wallTopPixel to wallBottomPixel
 		
-		int texture_offset_x;
-		if (manager->rays[i].wasHitVertical == true)
-			texture_offset_x = (int) manager->rays[i].wallHitY % TEXTURE_HEIGHT;
-		else
-			texture_offset_x = (int) manager->rays[i].wallHitX % TEXTURE_WIDTH;
         for (int j = wallTopPixel; j < wallBottomPixel;++j)
 		{
-			int distance_from_top = j + (wallStripHeight / 2) - (HEIGHT / 2);
-			int texture_offset_y = distance_from_top * ((double)TEXTURE_HEIGHT / wallStripHeight);
-			int pixel_color = ((int *)manager->mlx_manager.north_texture)[TEXTURE_WIDTH * texture_offset_y + texture_offset_x];
-			cub_mlx_pixel_put(&manager->mlx_manager.img_data, i * WALL_STRIP_WIDTH, j, WIDTH, HEIGHT, pixel_color);
+			cub_mlx_pixel_put(&manager->mlx_manager.img_data, i * WALL_STRIP_WIDTH, j, WIDTH, HEIGHT, __get_pixel_color(manager, i, wallStripHeight, j));
 		}
 	
 		// render floor 
@@ -622,11 +655,23 @@ void	rendering_3d_walls(t_cub_manager* manager)
 }
 
 
-int	__load_textures(t_cub_manager* manager)
+void	__load_textures(t_cub_manager* manager)
 {
+	//decoding xpm files
 	manager->mlx_manager.north_texture.img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, manager->map->no, &manager->mlx_manager.north_texture.texture_width,  &manager->mlx_manager.north_texture.texture_width);
+	manager->mlx_manager.south_texture.img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, manager->map->so, &manager->mlx_manager.south_texture.texture_width,  &manager->mlx_manager.south_texture.texture_width);
+	manager->mlx_manager.east_texture.img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, manager->map->ea, &manager->mlx_manager.east_texture.texture_width,  &manager->mlx_manager.east_texture.texture_width);
+	manager->mlx_manager.west_texture.img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, manager->map->we, &manager->mlx_manager.west_texture.texture_width,  &manager->mlx_manager.west_texture.texture_width);
 	
-	return (EXIT_SUCCESS);
+
+	if (!manager->mlx_manager.north_texture.img || !manager->mlx_manager.south_texture.img || !manager->mlx_manager.east_texture.img || !manager->mlx_manager.west_texture.img)
+		panic("error: coudn't load textures");
+	
+	//initializing img data attributes
+	manager->mlx_manager.north_texture.addr = mlx_get_data_addr(manager->mlx_manager.north_texture.img, &manager->mlx_manager.north_texture.bits_per_pixel, &manager->mlx_manager.north_texture.line_length, &manager->mlx_manager.north_texture.endian);
+	manager->mlx_manager.south_texture.addr = mlx_get_data_addr(manager->mlx_manager.south_texture.img, &manager->mlx_manager.south_texture.bits_per_pixel, &manager->mlx_manager.south_texture.line_length, &manager->mlx_manager.south_texture.endian);
+	manager->mlx_manager.east_texture.addr = mlx_get_data_addr(manager->mlx_manager.east_texture.img, &manager->mlx_manager.east_texture.bits_per_pixel, &manager->mlx_manager.east_texture.line_length, &manager->mlx_manager.east_texture.endian);
+	manager->mlx_manager.west_texture.addr = mlx_get_data_addr(manager->mlx_manager.west_texture.img, &manager->mlx_manager.west_texture.bits_per_pixel, &manager->mlx_manager.west_texture.line_length, &manager->mlx_manager.west_texture.endian);
 }
 
 int render(t_map_manager *map_manager)
@@ -689,13 +734,6 @@ int render(t_map_manager *map_manager)
 	manager.mlx_manager.img_data.addr = mlx_get_data_addr(manager.mlx_manager.img_data.img, &manager.mlx_manager.img_data.bits_per_pixel, &manager.mlx_manager.img_data.line_length, &manager.mlx_manager.img_data.endian);
 	__load_textures(&manager);
 	manager.rays = malloc(NUMBER_OF_RAYS * sizeof(t_ray));
-	int texture_width = TEXTURE_WIDTH;
-	int texture_height = TEXTURE_HEIGHT;
-	manager.mlx_manager.north_texture = mlx_xpm_file_to_image(manager.mlx_manager.mlx, "/Users/ysahih/Desktop/cub3d/assests/north_texture.xpm", &texture_width, &texture_height);
-	if (manager.mlx_manager.north_texture == NULL){
-		perror("687");
-		exit(1);
-	}
 	draw(&manager);
 	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYDOWN, 1L<<0, controls, &manager);
 	mlx_loop(manager.mlx_manager.mlx);

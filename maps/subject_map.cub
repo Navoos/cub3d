@@ -1,7 +1,7 @@
-NO maps/subject_map.cub
-SO maps/subject_map.cub
-WE maps/subject_map.cub
-EA maps/subject_map.cub
+NO /Users/osallak/Desktop/normed-version-cub3d/assests/north_texture.xpm
+SO /Users/osallak/Desktop/normed-version-cub3d/assests/north_texture.xpm
+WE /Users/osallak/Desktop/normed-version-cub3d/assests/north_texture.xpm
+EA /Users/osallak/Desktop/normed-version-cub3d/assests/t.xpm
 
 
 C 0,0,0
