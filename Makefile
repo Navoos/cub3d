@@ -1,8 +1,8 @@
 NAME = bin/cub3D
 SRC = main.c parser.c get_next_line.c get_next_line_utils.c ft_split.c ft_strlcpy.c ft_split.c ft_atoi.c renderer.c
-CC = gcc
-CFLAGS = -Wall -Wextra -c -Iinclude -g -Ofast #-fsanitize=address -O3 -ffast-math -msse4.2 -mtune=intels
-LFLAGS = -lmlx -framework OpenGL -framework AppKit -fsanitize=address
+CC = cc
+CFLAGS = -Wall -Wextra -c -Iinclude -Ofast #-fsanitize=address -O3 -ffast-math -msse4.2 -mtune=intels
+LFLAGS = -lmlx -framework OpenGL -framework AppKit #-fsanitize=address
 
 SRCS = $(addprefix src/, $(SRC))
 OBJS = $(addprefix obj/, $(SRC:.c=.o))

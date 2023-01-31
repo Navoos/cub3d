@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/01/27 00:53:37 by osallak          ###   ########.fr       */
+/*   Updated: 2023/01/31 05:35:51 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,13 @@ enum {
 	ON_DESTROY = 17
 };
 
+enum {
+	NO,
+	SO,
+	WE,
+	EA,
+};
+
 typedef struct s_map_manager
 {
 	char		*no;
@@ -88,11 +95,7 @@ typedef struct s_mlx_manager
 	void			*mlx;
 	void			*mlx_window;
 	t_img_data		img_data;
-	t_img_data		south_texture;
-	t_img_data		north_texture;
-	t_img_data		east_texture;
-	t_img_data		west_texture;
-	int			*test_texture;//TODO: work with the textures parsed from the map
+	t_img_data		*textures;
 }t_mlx_manager;
 
 typedef struct s_player
