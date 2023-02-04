@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/04 05:42:34 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/04 12:15:31 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,6 +212,8 @@ int controls(int key, t_cub_manager	*manager)
 			manager->player.y += manager->player.walk_speed * sin(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
 		}
 	}
+	else if (key == 49)
+		manager->gun_state = SHOOT;
 	if (key == 53)
 		exit(EXIT_SUCCESS);
 	draw(manager);
@@ -258,20 +260,20 @@ void	draw_empty_circle(t_cub_manager *manager, t_draw_circle c)
 		cub_mlx_pixel_put(&manager->mlx_manager.img_data, p);
 	}
 }
-
+void	__render_gun(t_cub_manager* manager);
 int draw(t_cub_manager *manager)
 {
-	double	angle;
-	int		num_of_rays;
+	// double	angle;
+	// int		num_of_rays;
 	// int		i;
 	// double	dist;
-	clear_window(manager, 0x00000000, WIDTH, HEIGHT);
+	// clear_window(manager, 0x00000000, WIDTH, HEIGHT);
 	// double	height;
 	cast_all_rays(manager);
-
-	angle = manager->player.rotation_angle - (radians(FOV / 2.0));
-	num_of_rays = WIDTH / (double) (WALL_STRIP_WIDTH);
+	// __render_gun(manager);
 	mlx_put_image_to_window(manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, manager->mlx_manager.img_data.img, 0, 0);
+	clear_window(manager, 0x00000000, WIDTH, HEIGHT);
+
 	return 0;
 }
 
@@ -513,16 +515,18 @@ int	__get_texture_id(t_ray ray)
 	return (NORTH);
 }
 
-int	__get_y_offset(int wall_top_pixel, double wall_strip_height, int j, int hi)
+int	__get_y_offset(double wall_strip_height, int j, int hi)
 {
 	double y_offset;
+	int		distance_from_top;
 
 	// printf ("wall_top_pixel: %d, wall_strip_height: %d, j: %d, hi: %d\n", wall_top_pixel, wall_strip_height, j, hi);
-	y_offset = (j - wall_top_pixel) / wall_strip_height * hi;
+	distance_from_top = j + (wall_strip_height / 2) - (HEIGHT / 2);
+	y_offset = distance_from_top / wall_strip_height * hi;
 	return ((int)y_offset);
 }
 
-int	__get_pixel_color(t_cub_manager* manager, int wall_top_pixel, double wall_strip_height, int j, int ray_id)
+int	__get_pixel_color(t_cub_manager* manager, double wall_strip_height, int j, int ray_id)
 {
 	int			y_offset;
 	int			x_offset;
@@ -530,7 +534,7 @@ int	__get_pixel_color(t_cub_manager* manager, int wall_top_pixel, double wall_st
 	int			color;
 
 	texture = manager->map->wall_textures[__get_texture_id(manager->rays[ray_id])];	
-	y_offset = __get_y_offset(wall_top_pixel, wall_strip_height, j, texture.hi);
+	y_offset = __get_y_offset(wall_strip_height, j, texture.hi);
 	x_offset = __get_x_offset(manager->rays[ray_id], texture.wi);
 	// printf ("y_offset: %d, x_offset: %d, ray_id: %d\n", y_offset, x_offset, ray_id);
 	color  = *(((int *)texture.tex_img_data.addr + (y_offset * texture.wi + x_offset)));
@@ -560,13 +564,63 @@ void	__render_floor(t_cub_manager* manager, int x, int wallBottomPixel)
 	p.limits.y = HEIGHT;
 	p.color = manager->map->f;
 	p.point.x = x;
-		for (int y = wallBottomPixel; y < HEIGHT; y++)
-		{
-			p.point.y = y;
-			cub_mlx_pixel_put(&manager->mlx_manager.img_data, p);
-		}
+	for (int y = wallBottomPixel; y < HEIGHT; y++)
+	{
+		p.point.y = y;
+		cub_mlx_pixel_put(&manager->mlx_manager.img_data, p);
+	}
 }
+#include<unistd.h>
 
+void	__render_gun(t_cub_manager* manager)
+{
+	int	x_start;
+	int	y_start;
+	int	gun_index;
+
+	gun_index = manager->gun_state;
+	x_start = WIDTH / 2 - manager->gun[gun_index].wi / 2;
+	y_start = HEIGHT - manager->gun[gun_index].hi;
+	// clear_window(manager, 0x0, WIDTH, HEIGHT);
+	// mlx_png_file_to_image();
+	// x_start = 0;
+	// y_start = 0;
+	// mlx_put_image_to_window(manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, manager->gun[gun_index].img, x_start, y_start);
+	for (int y = y_start; y < y_start + manager->gun[gun_index].hi; y++)
+	{
+		for (int x = x_start; x < x_start + manager->gun[gun_index].wi; x++)
+		{
+			u_int32_t color = *(((int *)manager->gun[gun_index].tex_img_data.addr + ((y - y_start) * manager->gun[gun_index].wi + (x - x_start))));
+			// printf ("color: %u\n", color);
+			if (color != 0)
+				cub_mlx_pixel_put(&manager->mlx_manager.img_data, (t_draw_point_struct){.point = {x, y}, .limits = {WIDTH, HEIGHT}, .color = color});
+		}
+	}
+	manager->gun_state = STAND;
+	// puts("gun rendered");
+}
+void	__draw_aim_symbol(t_cub_manager* manager)
+{
+	int	x;
+	int	y;
+	int	radius;
+
+	x = WIDTH / 2;
+	y = HEIGHT / 2;
+	radius = - 10;
+	while (radius <= 10)
+	{
+		cub_mlx_pixel_put(&manager->mlx_manager.img_data, (t_draw_point_struct){.point = {x + radius, y}, .limits = {WIDTH, HEIGHT}, .color = 0});
+		radius++;
+	}
+	radius = -10;
+	while (radius <= 10)
+	{
+		cub_mlx_pixel_put(&manager->mlx_manager.img_data, (t_draw_point_struct){.point = {x, y + radius}, .limits = {WIDTH, HEIGHT}, .color = 0});
+		radius++;
+	}
+	
+}
 void	rendering_3d_walls(t_cub_manager* manager)
 {
 	t_draw_point_struct p;
@@ -592,13 +646,14 @@ void	rendering_3d_walls(t_cub_manager* manager)
 		{
 			p.point.x = i * WALL_STRIP_WIDTH;
 			p.point.y = j;
-			p.color = __get_pixel_color(manager, wallTopPixel, wallStripHeight, j, i);
+			p.color = __get_pixel_color(manager, wallStripHeight, j, i);
 			cub_mlx_pixel_put(&manager->mlx_manager.img_data, p);
 
 		}
 		__render_floor(manager, i * WALL_STRIP_WIDTH, wallBottomPixel);
-			
+		// __draw_aim_symbol(manager);
     }
+	__render_gun(manager);
 }
 
 void	__geting_data_addr(t_cub_manager* manager)
@@ -624,6 +679,24 @@ void	__load_textures(t_cub_manager* manager)
 	if (!manager->map->wall_textures[NORTH].img || !manager->map->wall_textures[SOUTH].img || !manager->map->wall_textures[EAST].img || !manager->map->wall_textures[WEST].img)
 		panic("failed to load textures");
 	__geting_data_addr(manager);
+}
+
+void	__load_gun_textures(t_cub_manager* manager)
+{
+	//decoding gun textures
+	manager->gun[SHOOT].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, SHOOTING_GUN_PATH, &manager->gun[SHOOT].wi, &manager->gun[SHOOT].hi);
+	manager->gun[STAND].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, STANDING_GUN_PATH, &manager->gun[STAND].wi, &manager->gun[STAND].hi);
+	//protection
+	if (!manager->gun[SHOOT].img || !manager->gun[STAND].img)
+		panic("failed to load gun textures (xpm file error)");
+	//getting data addr
+	manager->gun[SHOOT].tex_img_data.addr = mlx_get_data_addr(manager->gun[SHOOT].img, &manager->gun[SHOOT].tex_img_data.bits_per_pixel,\
+	&manager->gun[SHOOT].tex_img_data.line_length, &manager->gun[SHOOT].tex_img_data.endian);
+	manager->gun[STAND].tex_img_data.addr = mlx_get_data_addr(manager->gun[STAND].img, &manager->gun[STAND].tex_img_data.bits_per_pixel,\
+	&manager->gun[STAND].tex_img_data.line_length, &manager->gun[STAND].tex_img_data.endian);
+	//protection
+	if (!manager->gun[SHOOT].tex_img_data.addr || !manager->gun[STAND].tex_img_data.addr)
+		panic("mlx_get_data_addr failed wile loading gun textures");
 }
 
 int render(t_map_manager *map_manager)
@@ -688,13 +761,16 @@ int render(t_map_manager *map_manager)
 	// printf("%p\n", manager.map->wall_textures[WEST].tex_img_data.addr);
 	//
 	__load_textures(&manager);
+	__load_gun_textures(&manager);
 	manager.rays = malloc(NUMBER_OF_RAYS * sizeof(t_ray));
-	draw(&manager);
-	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYUP, 1L<<0, controls, &manager);
+	manager.gun_state = STAND;
+	// draw(&manager);
+	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYDOWN, 0, controls, &manager);
 	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYDOWN, 1L<<0, controls, &manager);
 	// mlx_key_hook(manager.mlx_manager.mlx_window, controls, &manager);
 	// 	mlx_hook(cub->mlx_window, 2, 0, key_press, cub);
 	// mlx_hook(cub->mlx_window, 3, 0, key_release, cub);
+	mlx_loop_hook(manager.mlx_manager.mlx, draw, &manager);
 	mlx_loop(manager.mlx_manager.mlx);
 	return (0);
 }

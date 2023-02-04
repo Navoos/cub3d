@@ -1,7 +1,9 @@
-obj/*
-bin/*
+obj/*.o
+bin/cub3D
 .vscode/
 TODO
 changes
 *.sh
 a.out*
+sprite/
+__*

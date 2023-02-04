@@ -6,3 +6,6 @@
 - refactor all raycasting functions calls
 - check if all the attributes are initialized
 - intersection not working properly in the joint of two walls
+
+
+- init gun index and change the value of the state of it

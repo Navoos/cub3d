@@ -29,15 +29,13 @@ int max(int a, int b)
 {
     if (a > b)
         return a;
-    else
-	    return b;
+	return b;
 }
 int min(int a, int b)
 {
     if (a > b)
         return b;
-    else
-	    return a;
+	return a;
 }
 
 void draw_line(double x0, double y0, double x1, double y1, int lx, int ly, t_cub_manager *manager, int color)
@@ -170,60 +168,38 @@ void	draw_empty_rect(int x, int y, int width, int height, int lx, int ly, t_cub_
 	draw_line(x + width, y, x + width, y + height,lx, ly, manager, color);
 }
 
+void	__reset_player(t_player* player)
+{
+	player->walk_direction = 0;
+	player->turn_direction = 0;
+}
+
 int controls(int key, t_cub_manager	*manager)
 {
-	double fx;
-	double fy;
-	if (key == 124)
-	{
-		manager->player.turn_direction = 1;
-		normalize_angle(&manager->player.rotation_angle);
-		manager->player.rotation_angle += manager->player.turn_direction * manager->player.rotation_speed;
-		normalize_angle(&manager->player.rotation_angle);
-	}
-	else if (key == 123)
-	{
-		manager->player.turn_direction = -1;
-		normalize_angle(&manager->player.rotation_angle);
-		manager->player.rotation_angle += manager->player.turn_direction * manager->player.rotation_speed;
-		normalize_angle(&manager->player.rotation_angle);
-	}
-	else if (key == 125)
-	{
-		manager->player.walk_direction = -1;
-		fx = manager->player.x + manager->player.walk_speed * cos(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
-		fy = manager->player.y + manager->player.walk_speed * sin(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
-		if (fy >= 0 && fy < manager->map->map_height * TILE_SIZE && fx >= 0 && fx < manager->map->map_width * TILE_SIZE && manager->map->map[(int)fy / TILE_SIZE][(int)fx / TILE_SIZE] != '1')
-		{
-			if (!(manager->map->map[(int)fy / TILE_SIZE][(int)manager->player.x / TILE_SIZE] == '1' || manager->map->map[(int)manager->player.y / TILE_SIZE][(int)fx / TILE_SIZE] == '1'))
-			{
-				manager->player.x += manager->player.walk_speed * cos(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
-				manager->player.y += manager->player.walk_speed * sin(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
-			}
-			// printf("hop\n");
-		}
-		// printf("hooray\n");
-
-	}
-	else if (key == 126)
-	{
-		manager->player.walk_direction = 1;
-		fx = manager->player.x + manager->player.walk_speed * cos(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
-		fy = manager->player.y + manager->player.walk_speed * sin(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
-		if (fy >= 0 && fy < manager->map->map_height * TILE_SIZE && fx >= 0 && fx < manager->map->map_width * TILE_SIZE && manager->map->map[(int)fy / TILE_SIZE][(int)fx / TILE_SIZE] != '1')
-		{
-			if (!(manager->map->map[(int)fy / TILE_SIZE][(int)manager->player.x / TILE_SIZE] == '1' || manager->map->map[(int)manager->player.y / TILE_SIZE][(int)fx / TILE_SIZE] == '1'))
-			{
-				manager->player.x += manager->player.walk_speed * cos(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
-				manager->player.y += manager->player.walk_speed * sin(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
-			}
-			// printf("hop\n");
-		}
-		// printf("hooray\n");
-	}
+	double new_x;
+	double new_y;
+	
 	if (key == 53)
 		exit(EXIT_SUCCESS);
+	if (key == 123)
+		manager->player.turn_direction = -1;
+	if (key == 124)
+		manager->player.turn_direction = 1;
+	if (key == 125)
+		manager->player.walk_direction = -1;
+	if (key == 126)
+		manager->player.walk_direction = 1;
+	manager->player.rotation_angle += manager->player.turn_direction * manager->player.rotation_speed;
+	normalize_angle(&manager->player.rotation_angle);
+	new_x = manager->player.x + cos(manager->player.rotation_angle) * (manager->player.walk_direction * manager->player.walk_speed);
+	new_y = manager->player.y + sin(manager->player.rotation_angle) * (manager->player.walk_direction * manager->player.walk_speed);
+	if (manager->map->map[(int)new_y][(int)manager->player.x] == '0' || ft_strchr(PLAYER_CHAR, manager->map->map[(int)new_y][(int)manager->player.x]))//TODO: check this
+	{
+		manager->player.x = new_x;
+		manager->player.y = new_y;
+	}
 	draw(manager);
+	__reset_player(&manager->player);
 	return 0;
 }
 
@@ -568,7 +544,7 @@ void	cast_all_rays(t_cub_manager* manager)
 // 	}
 // }
 
-void	a_select_the_right_texture(t_cub_manager* manager, int ray_index)
+void	_select_the_right_texture(t_cub_manager* manager, int ray_index)
 {
 
 	if (manager->rays[ray_index].wasHitVertical && manager->rays[ray_index].isRayFacingRight)

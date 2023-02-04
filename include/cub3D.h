@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3D.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yakhoudr <yakhoudr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/01 13:28:33 by yakhoudr         ###   ########.fr       */
+/*   Updated: 2023/02/04 11:03:53 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <math.h>
 # include <limits.h>
 # include <stdbool.h>
+# include <float.h>
 # include "mlx.h"
 # include "get_next_line.h"
 
@@ -34,14 +35,19 @@
 # define SOUTH 1 
 # define EAST 2
 # define WEST 3
-# define HEIGHT 720
-# define R_SPEED 5
-# define W_SPEED 5
+# define HEIGHT 720 
+# define R_SPEED 2.0
+# define W_SPEED 2.0
 # define MINIMAP_WIDTH 10
 # define MINIMAP_HEIGHT 5
 # define MINIMAP_X 10
 # define MINIMAP_Y 10
 # define NUMBER_OF_RAYS (WIDTH / WALL_STRIP_WIDTH)
+# define SHOOTING_GUN_PATH "assets/shoot.xpm"
+# define STANDING_GUN_PATH "assets/hold.xpm" 
+# define SHOOT 0
+# define STAND 1
+
 typedef struct	s_img_data {
 	void	*img;
 	char	*addr;
@@ -157,6 +163,8 @@ typedef struct s_cub_manager
 	t_mlx_manager	mlx_manager;
 	t_player		player;
 	t_ray			*rays;
+	t_texture		gun[2];
+	int				gun_state;//0 shoot 1 stand , check load 
 }	t_cub_manager;
 
 char	**ft_split(char *s, char c);
