@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/04 12:15:31 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/04 20:41:26 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,7 +201,7 @@ int controls(int key, t_cub_manager	*manager)
 		// printf("hooray\n");
 		
 	}
-	else if (key == 126)
+	if (key == 126)
 	{
 		manager->player.walk_direction = 1;
 		fx = manager->player.x + manager->player.walk_speed * cos(manager->player.rotation_angle) * manager->player.walk_direction * 1.0;
@@ -245,8 +245,8 @@ int controls(int key, t_cub_manager	*manager)
 //     // Draw the player on the mini-map
 //     cub_mlx_pixel_put(&manager->mlx_manager.img_data, MINIMAP_X + player_x - start_x, MINIMAP_Y + player_y - start_y, 0xFF0000);
 // }
-# define mini_x 30
-# define mini_y 30
+# define mini_x (30) 
+# define mini_y (30)
 
 void	draw_empty_circle(t_cub_manager *manager, t_draw_circle c)
 {
@@ -630,8 +630,9 @@ void	rendering_3d_walls(t_cub_manager* manager)
 	for (int i = 0; i < NUMBER_OF_RAYS; i++) {
 			// printf("distance: %f\n", manager->rays[i].distance);
         double perpDistance = manager->rays[i].distance * cos(manager->rays[i].rayAngle - manager->player.rotation_angle);
-		// printf("%lf, %lf, (%s:%d)\n", manager->rays[i].distance, cos(manager->rays[i].rayAngle - manager->player.rotation_angle), __FILE__, __LINE__);
+
         double distanceProjPlane = (WIDTH / 2.0) / tan(radians(FOV) / 2.0);
+
         double projectedWallHeight = ((double)TILE_SIZE / perpDistance) * distanceProjPlane;
 
         double	wallStripHeight = projectedWallHeight;
@@ -698,6 +699,7 @@ void	__load_gun_textures(t_cub_manager* manager)
 	if (!manager->gun[SHOOT].tex_img_data.addr || !manager->gun[STAND].tex_img_data.addr)
 		panic("mlx_get_data_addr failed wile loading gun textures");
 }
+
 
 int render(t_map_manager *map_manager)
 {

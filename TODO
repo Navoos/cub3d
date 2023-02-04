@@ -9,3 +9,4 @@
 
 
 - init gun index and change the value of the state of it
+- call mlx put image to window in the right place

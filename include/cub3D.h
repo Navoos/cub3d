@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/04 11:03:53 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/04 12:23:32 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,12 +48,16 @@
 # define SHOOT 0
 # define STAND 1
 
+# define TEXTURE_WIDTH 30
+# define TEXTURE_HEIGHT 30
 typedef struct	s_img_data {
 	void	*img;
 	char	*addr;
 	int		bits_per_pixel;
 	int		line_length;
 	int		endian;
+	int		texture_width;
+	int		texture_height;
 }				t_img_data;
 
 typedef struct s_quadri_long
@@ -128,9 +132,10 @@ typedef struct s_map_manager
 
 typedef struct s_mlx_manager
 {
-	void		*mlx;
-	void		*mlx_window;
-	t_img_data	img_data;
+	void			*mlx;
+	void			*mlx_window;
+	t_img_data		img_data;
+	t_img_data		*textures;
 }t_mlx_manager;
 
 typedef struct s_player
