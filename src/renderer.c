@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/04 20:41:26 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/05 03:57:20 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,11 +213,28 @@ int controls(int key, t_cub_manager	*manager)
 		}
 	}
 	else if (key == 49)
+	{
 		manager->gun_state = SHOOT;
+		manager->gun_frames = 3;
+	}
 	if (key == 53)
 		exit(EXIT_SUCCESS);
 	draw(manager);
 	return 0;
+}
+
+int	__key_release(int key, t_cub_manager* manager)
+{
+	if (key == 124 || key == 123)
+		manager->player.turn_direction = 0;
+	if (key == 125 || key == 126)
+		manager->player.walk_direction = 0;
+	if (key == 49)
+	{
+		manager->gun_state = STAND;
+		manager->gun_frames = 0;
+	}
+	return (0);
 }
 
 
@@ -406,16 +423,8 @@ void	cast(t_ray* ray, t_cub_manager* manager)
 	
 	double horz_hit_distance = 0.0;
 	double vert_hit_distance = 0.0;
-	// if (found_horz_wall_hit)
-		horz_hit_distance = hypot(manager->player.x - horz_wall_hit_x, manager->player.y - horz_wall_hit_y);
-	// else
-	// 	horz_hit_distance = 3.4E+38;//double max value
-	// if (found_ver_hit)
-		vert_hit_distance = hypot(manager->player.x - ver_hit_x, manager->player.y - ver_hit_y);
-	// else
-	// 	vert_hit_distance = 3.4E+38;//double max value
-	
-	// printf("ver_dis: %f\thor_dis: %f       (renderer.c:461)\n", vert_hit_distance, horz_hit_distance);
+	horz_hit_distance = hypot(manager->player.x - horz_wall_hit_x, manager->player.y - horz_wall_hit_y);
+	vert_hit_distance = hypot(manager->player.x - ver_hit_x, manager->player.y - ver_hit_y);
 	ray->wasHitVertical = false;
 	if (found_horz_wall_hit && found_ver_hit)
 	{
@@ -520,7 +529,6 @@ int	__get_y_offset(double wall_strip_height, int j, int hi)
 	double y_offset;
 	int		distance_from_top;
 
-	// printf ("wall_top_pixel: %d, wall_strip_height: %d, j: %d, hi: %d\n", wall_top_pixel, wall_strip_height, j, hi);
 	distance_from_top = j + (wall_strip_height / 2) - (HEIGHT / 2);
 	y_offset = distance_from_top / wall_strip_height * hi;
 	return ((int)y_offset);
@@ -581,23 +589,23 @@ void	__render_gun(t_cub_manager* manager)
 	gun_index = manager->gun_state;
 	x_start = WIDTH / 2 - manager->gun[gun_index].wi / 2;
 	y_start = HEIGHT - manager->gun[gun_index].hi;
-	// clear_window(manager, 0x0, WIDTH, HEIGHT);
-	// mlx_png_file_to_image();
-	// x_start = 0;
-	// y_start = 0;
-	// mlx_put_image_to_window(manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, manager->gun[gun_index].img, x_start, y_start);
 	for (int y = y_start; y < y_start + manager->gun[gun_index].hi; y++)
 	{
 		for (int x = x_start; x < x_start + manager->gun[gun_index].wi; x++)
 		{
 			u_int32_t color = *(((int *)manager->gun[gun_index].tex_img_data.addr + ((y - y_start) * manager->gun[gun_index].wi + (x - x_start))));
-			// printf ("color: %u\n", color);
 			if (color != 0)
 				cub_mlx_pixel_put(&manager->mlx_manager.img_data, (t_draw_point_struct){.point = {x, y}, .limits = {WIDTH, HEIGHT}, .color = color});
 		}
 	}
-	manager->gun_state = STAND;
-	// puts("gun rendered");
+	// printf ("gun state: %d (%s:%d)\n", manager->gun_state, __FILE__, __LINE__);
+	if (manager->gun_frames == 0)
+		manager->gun_state = STAND;
+	else{
+		//  system("afplay /Users/osallak/Desktop/normed-version-cub3d/assets/9mm_pistol.mp3");
+		manager->gun_frames--;
+	}
+	// sleep(1);
 }
 void	__draw_aim_symbol(t_cub_manager* manager)
 {
@@ -697,9 +705,20 @@ void	__load_gun_textures(t_cub_manager* manager)
 	&manager->gun[STAND].tex_img_data.line_length, &manager->gun[STAND].tex_img_data.endian);
 	//protection
 	if (!manager->gun[SHOOT].tex_img_data.addr || !manager->gun[STAND].tex_img_data.addr)
-		panic("mlx_get_data_addr failed wile loading gun textures");
+		panic("mlx_get_data_addr failed while loading gun textures");
 }
 
+int	__mouse_move(int x, int y, t_cub_manager *manager)
+{
+	if (x < 0 || x > WIDTH || y < 0 || y > HEIGHT)
+		return (EXIT_SUCCESS);
+	if (x < manager->mouse_x)
+		controls(123, manager);
+	else if (x > manager->mouse_x)
+		controls(124, manager);
+	manager->mouse_x = x;
+	return (0);
+}
 
 int render(t_map_manager *map_manager)
 {
@@ -766,13 +785,17 @@ int render(t_map_manager *map_manager)
 	__load_gun_textures(&manager);
 	manager.rays = malloc(NUMBER_OF_RAYS * sizeof(t_ray));
 	manager.gun_state = STAND;
+	manager.gun_frames = 0;
 	// draw(&manager);
-	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYDOWN, 0, controls, &manager);
-	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYDOWN, 1L<<0, controls, &manager);
 	// mlx_key_hook(manager.mlx_manager.mlx_window, controls, &manager);
 	// 	mlx_hook(cub->mlx_window, 2, 0, key_press, cub);
 	// mlx_hook(cub->mlx_window, 3, 0, key_release, cub);
+	manager.mouse_x = WIDTH / 2;
 	mlx_loop_hook(manager.mlx_manager.mlx, draw, &manager);
+	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYDOWN, 1L<<0, controls, &manager);
+	mlx_hook(manager.mlx_manager.mlx_window, 3, 2, __key_release, &manager);
+	mlx_hook(manager.mlx_manager.mlx_window, 6, 1, __mouse_move, &manager);
+	// mlx_mouse_hook(manager.mlx_manager.mlx_window, __mouse_hook, &manager);
 	mlx_loop(manager.mlx_manager.mlx);
 	return (0);
 }
