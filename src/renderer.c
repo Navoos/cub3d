@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/06 05:38:49 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/06 16:52:44 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,6 +208,29 @@ void __switch_guns(t_cub_manager *manager)
 	else
 		manager->weapons.gun_type = PISTOL;
 }
+
+void	__move_player_sideways(t_cub_manager* manager, int key)
+{
+	int		turn_direction;
+	double	new_x;
+	double	new_y;
+	double	rotation_angle;
+
+	if (key == KEY_A)
+		turn_direction = -1;
+	else
+		turn_direction = 1;
+	rotation_angle = manager->player.rotation_angle + (turn_direction * (M_PI / 2));
+	normalize_angle(&rotation_angle);
+	new_x = manager->player.x + manager->player.walk_direction * manager->player.walk_speed * cos(rotation_angle);
+	new_y = manager->player.y + manager->player.walk_direction * manager->player.walk_speed * sin(rotation_angle);
+	if (!__has_has_wall_at(new_x, new_y, manager))
+	{
+		manager->player.x = new_x;
+		manager->player.y = new_y;
+	}
+}
+
 int	controls(int key, t_cub_manager* manager)
 {
 	if (key == KEY_LEFT)
@@ -231,6 +254,8 @@ int	controls(int key, t_cub_manager* manager)
 		__rotate_player(manager);
 	if (key == KEY_R)
 		__switch_guns(manager);
+	if (key == KEY_D || key == KEY_A)
+		__move_player_sideways(manager, key);
 	draw(manager);
 	return 0;
 }
