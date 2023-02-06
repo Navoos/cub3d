@@ -6,12 +6,13 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/05 03:57:01 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/06 03:34:04 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CUB3D_H
 # define CUB3D_H
+
 # include <stdio.h>
 # include <unistd.h>
 # include <fcntl.h>
@@ -36,8 +37,8 @@
 # define EAST 2
 # define WEST 3
 # define HEIGHT 720 
-# define R_SPEED 3.0
-# define W_SPEED 3.0
+# define R_SPEED 4.0
+# define W_SPEED 4.0
 # define MINIMAP_WIDTH 10
 # define MINIMAP_HEIGHT 5
 # define MINIMAP_X 10
@@ -45,6 +46,7 @@
 # define NUMBER_OF_RAYS (WIDTH / WALL_STRIP_WIDTH)
 # define SHOOTING_GUN_PATH "assets/shoot.xpm"
 # define STANDING_GUN_PATH "assets/hold.xpm" 
+# define AIM_SYMBOL_PATH "assets/target.xpm"
 # define SHOOT 0
 # define STAND 1
 
@@ -76,6 +78,19 @@ enum {
 	ON_MOUSEMOVE = 6,
 	ON_EXPOSE = 12,
 	ON_DESTROY = 17
+};
+
+enum {
+	KEY_A = 0,
+	KEY_S = 1,
+	KEY_D = 2,
+	KEY_W = 13,
+	KEY_ESC = 53,
+	KEY_LEFT = 123,
+	KEY_RIGHT = 124,
+	KEY_UP = 126,
+	KEY_DOWN = 125,
+	KEY_SPACE = 49
 };
 
 typedef struct s_pair_double
@@ -172,6 +187,7 @@ typedef struct s_cub_manager
 	int				gun_state;//0 shoot 1 stand , check load 
 	int				gun_frames;
 	int				mouse_x;
+	t_texture		aim_symbol;
 }	t_cub_manager;
 
 char	**ft_split(char *s, char c);
