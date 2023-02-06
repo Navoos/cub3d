@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/06 03:42:49 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/06 05:38:49 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,13 @@ void	__rotate_player(t_cub_manager* manager)
 	normalize_angle(&manager->player.rotation_angle);
 }
 
+void __switch_guns(t_cub_manager *manager)
+{
+	if (manager->weapons.gun_type == PISTOL)
+		manager->weapons.gun_type = SNIPER;
+	else
+		manager->weapons.gun_type = PISTOL;
+}
 int	controls(int key, t_cub_manager* manager)
 {
 	if (key == KEY_LEFT)
@@ -213,8 +220,8 @@ int	controls(int key, t_cub_manager* manager)
 		manager->player.walk_direction = -1;
 	if (key == KEY_SPACE)
 	{
-		manager->gun_state = SHOOT;
-		manager->gun_frames = 3;
+		manager->weapons.gun_state = SHOOT;
+		manager->weapons.gun_frames = 3;
 	}
 	if (key == KEY_ESC)
 		exit(EXIT_SUCCESS);
@@ -222,6 +229,8 @@ int	controls(int key, t_cub_manager* manager)
 		__move_player(manager);
 	if (key == KEY_LEFT || key == KEY_RIGHT)
 		__rotate_player(manager);
+	if (key == KEY_R)
+		__switch_guns(manager);
 	draw(manager);
 	return 0;
 }
@@ -234,8 +243,8 @@ int	__key_release(int key, t_cub_manager* manager)
 		manager->player.walk_direction = 0;
 	if (key == 49)
 	{
-		manager->gun_state = STAND;
-		manager->gun_frames = 0;
+		manager->weapons.gun_state = STAND;
+		manager->weapons.gun_frames = 0;
 	}
 	return (0);
 }
@@ -283,14 +292,7 @@ void	draw_empty_circle(t_cub_manager *manager, t_draw_circle c)
 void	__render_gun(t_cub_manager* manager);
 int draw(t_cub_manager *manager)
 {
-	// double	angle;
-	// int		num_of_rays;
-	// int		i;
-	// double	dist;
-	// clear_window(manager, 0x00000000, WIDTH, HEIGHT);
-	// double	height;
 	cast_all_rays(manager);
-	// __render_gun(manager);
 	mlx_put_image_to_window(manager->mlx_manager.mlx, manager->mlx_manager.mlx_window, manager->mlx_manager.img_data.img, 0, 0);
 	clear_window(manager, 0x00000000, WIDTH, HEIGHT);
 
@@ -575,46 +577,29 @@ void	__render_floor(t_cub_manager* manager, int x, int wallBottomPixel)
 
 void	__render_gun(t_cub_manager* manager)
 {
-	int	x_start;
-	int	y_start;
-	int	gun_index;
+	int			x_start;
+	int			y_start;
+	t_texture	choosen_gun;
 
-	gun_index = manager->gun_state;
-	x_start = WIDTH / 2 - manager->gun[gun_index].wi / 2;
-	y_start = HEIGHT - manager->gun[gun_index].hi;
-	for (int y = y_start; y < y_start + manager->gun[gun_index].hi; y++)
+	choosen_gun = manager->weapons.gun[manager->weapons.gun_type + manager->weapons.gun_state];
+	x_start = WIDTH / 2 - choosen_gun.wi / 2;
+	y_start = HEIGHT - choosen_gun.hi;
+	for (int y = y_start; y < y_start + choosen_gun.hi; y++)
 	{
-		for (int x = x_start; x < x_start + manager->gun[gun_index].wi; x++)
+		for (int x = x_start; x < x_start + choosen_gun.wi; x++)
 		{
-			u_int32_t color = *(((int *)manager->gun[gun_index].tex_img_data.addr + ((y - y_start) * manager->gun[gun_index].wi + (x - x_start))));
+			u_int32_t color = *(((int *)choosen_gun.tex_img_data.addr + ((y - y_start) * choosen_gun.wi + (x - x_start))));
 			if (color != 0)
 				cub_mlx_pixel_put(&manager->mlx_manager.img_data, (t_draw_point_struct){.point = {x, y}, .limits = {WIDTH, HEIGHT}, .color = color});
 		}
 	}
-	if (manager->gun_frames == 0)
-		manager->gun_state = STAND;
+	if (manager->weapons.gun_frames == 0)
+		manager->weapons.gun_state = STAND;
 	else{
-		manager->gun_frames--;
+		manager->weapons.gun_frames--;
 	}
 }
 
-void	__render_target(t_cub_manager* manager)
-{
-	int	start_x;
-	int	start_y;
-
-	start_x = WIDTH / 2 - manager->aim_symbol.wi / 2;
-	start_y = HEIGHT / 2 - manager->aim_symbol.hi / 2;
-	for (int y = start_y; y < start_y + manager->aim_symbol.hi; y++)
-	{
-		for (int x = start_x; x < start_x + manager->aim_symbol.wi; x++)
-		{
-			u_int32_t color = *(((int *)manager->aim_symbol.tex_img_data.addr + ((y - start_y) * manager->aim_symbol.wi + (x - start_x))));
-			if (color != 0)
-				cub_mlx_pixel_put(&manager->mlx_manager.img_data, (t_draw_point_struct){.point = {x, y}, .limits = {WIDTH, HEIGHT}, .color = color});
-		}
-	}
-}
 void	rendering_3d_walls(t_cub_manager* manager)
 {
 	t_draw_point_struct p;
@@ -646,7 +631,7 @@ void	rendering_3d_walls(t_cub_manager* manager)
 		__render_floor(manager, i * WALL_STRIP_WIDTH, wallBottomPixel);
     }
 	__render_gun(manager);
-	__render_target(manager);
+	// __render_target(manager);
 }
 
 void	__geting_data_addr(t_cub_manager* manager)
@@ -662,6 +647,7 @@ void	__geting_data_addr(t_cub_manager* manager)
 	if (!manager->map->wall_textures[NORTH].tex_img_data.addr || !manager->map->wall_textures[SOUTH].tex_img_data.addr || !manager->map->wall_textures[EAST].tex_img_data.addr || !manager->map->wall_textures[WEST].tex_img_data.addr)
 		panic("mlx_get_data_addr failed");
 }
+
 void	__load_textures(t_cub_manager* manager)
 {
 	manager->map->wall_textures[NORTH].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, manager->map->no, &manager->map->wall_textures[NORTH].wi, &manager->map->wall_textures[NORTH].hi);
@@ -676,22 +662,27 @@ void	__load_textures(t_cub_manager* manager)
 void	__load_gun_textures(t_cub_manager* manager)
 {
 	//decoding gun textures
-	manager->gun[SHOOT].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, SHOOTING_GUN_PATH, &manager->gun[SHOOT].wi, &manager->gun[SHOOT].hi);
-	manager->gun[STAND].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, STANDING_GUN_PATH, &manager->gun[STAND].wi, &manager->gun[STAND].hi);
-	manager->aim_symbol.img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, AIM_SYMBOL_PATH, &manager->aim_symbol.wi, &manager->aim_symbol.hi);
+	manager->weapons.gun[PISTOL].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, STANDING_PISTOL_PATH, &manager->weapons.gun[PISTOL].wi, &manager->weapons.gun[PISTOL].hi);
+	manager->weapons.gun[SNIPER].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, STANDING_SNIPER_PATH, &manager->weapons.gun[SNIPER].wi, &manager->weapons.gun[SNIPER].hi);
+	manager->weapons.gun[PISTOL + 1].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, SHOOTING_PISTOL_PATH, &manager->weapons.gun[PISTOL + 1].wi, &manager->weapons.gun[PISTOL + 1].hi);
+	manager->weapons.gun[SNIPER + 1].img = mlx_xpm_file_to_image(manager->mlx_manager.mlx, SHOOTING_SNIPER_PATH, &manager->weapons.gun[SNIPER + 1].wi, &manager->weapons.gun[SNIPER + 1].hi);
+	
 	//protection
-	if (!manager->gun[SHOOT].img || !manager->gun[STAND].img || !manager->aim_symbol.img)
-		panic("failed to load gun textures (xpm file error)");
+	if (!manager->weapons.gun[PISTOL].img || !manager->weapons.gun[SNIPER].img || !manager->weapons.gun[PISTOL + SHOOT].img || !manager->weapons.gun[SNIPER + SHOOT].img)
+		panic("failed to load gun textures");
 	//getting data addr
-	manager->gun[SHOOT].tex_img_data.addr = mlx_get_data_addr(manager->gun[SHOOT].img, &manager->gun[SHOOT].tex_img_data.bits_per_pixel,\
-	&manager->gun[SHOOT].tex_img_data.line_length, &manager->gun[SHOOT].tex_img_data.endian);
-	manager->gun[STAND].tex_img_data.addr = mlx_get_data_addr(manager->gun[STAND].img, &manager->gun[STAND].tex_img_data.bits_per_pixel,\
-	&manager->gun[STAND].tex_img_data.line_length, &manager->gun[STAND].tex_img_data.endian);
-	manager->aim_symbol.tex_img_data.addr = mlx_get_data_addr(manager->aim_symbol.img, &manager->aim_symbol.tex_img_data.bits_per_pixel,\
-	&manager->aim_symbol.tex_img_data.line_length, &manager->aim_symbol.tex_img_data.endian);
+	manager->weapons.gun[PISTOL].tex_img_data.addr = mlx_get_data_addr(manager->weapons.gun[PISTOL].img, &manager->weapons.gun[PISTOL].tex_img_data.bits_per_pixel,\
+	&manager->weapons.gun[PISTOL].tex_img_data.line_length, &manager->weapons.gun[PISTOL].tex_img_data.endian);
+	manager->weapons.gun[SNIPER].tex_img_data.addr = mlx_get_data_addr(manager->weapons.gun[SNIPER].img, &manager->weapons.gun[SNIPER].tex_img_data.bits_per_pixel,\
+	&manager->weapons.gun[SNIPER].tex_img_data.line_length, &manager->weapons.gun[SNIPER].tex_img_data.endian);
+	manager->weapons.gun[PISTOL + 1].tex_img_data.addr = mlx_get_data_addr(manager->weapons.gun[PISTOL + 1].img, &manager->weapons.gun[PISTOL + 1].tex_img_data.bits_per_pixel,\
+	&manager->weapons.gun[PISTOL + 1].tex_img_data.line_length, &manager->weapons.gun[PISTOL + 1].tex_img_data.endian);
+	manager->weapons.gun[SNIPER + 1].tex_img_data.addr = mlx_get_data_addr(manager->weapons.gun[SNIPER + 1].img, &manager->weapons.gun[SNIPER + 1].tex_img_data.bits_per_pixel,\
+	&manager->weapons.gun[SNIPER + 1].tex_img_data.line_length, &manager->weapons.gun[SNIPER + 1].tex_img_data.endian);
+
 	//protection
-	if (!manager->gun[SHOOT].tex_img_data.addr || !manager->gun[STAND].tex_img_data.addr || !manager->aim_symbol.tex_img_data.addr)
-		panic("mlx_get_data_addr failed while loading gun/target textures");
+	if (!manager->weapons.gun[PISTOL].tex_img_data.addr || !manager->weapons.gun[SNIPER].tex_img_data.addr || !manager->weapons.gun[PISTOL + 1].tex_img_data.addr || !manager->weapons.gun[SNIPER + 1].tex_img_data.addr)
+		panic("failed to get data addr for gun textures");
 }
 
 int	__mouse_move(int x, int y, t_cub_manager *manager)
@@ -771,8 +762,9 @@ int render(t_map_manager *map_manager)
 	__load_textures(&manager);
 	__load_gun_textures(&manager);
 	manager.rays = malloc(NUMBER_OF_RAYS * sizeof(t_ray));
-	manager.gun_state = STAND;
-	manager.gun_frames = 0;
+	manager.weapons.gun_state = STAND;
+	manager.weapons.gun_frames = 0;
+	manager.weapons.gun_type = PISTOL;
 	manager.mouse_x = WIDTH / 2;
 	mlx_loop_hook(manager.mlx_manager.mlx, draw, &manager);
 	mlx_hook(manager.mlx_manager.mlx_window, ON_KEYDOWN, 0, controls, &manager);

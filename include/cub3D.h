@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/06 03:34:04 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/06 16:39:37 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,11 +44,15 @@
 # define MINIMAP_X 10
 # define MINIMAP_Y 10
 # define NUMBER_OF_RAYS (WIDTH / WALL_STRIP_WIDTH)
-# define SHOOTING_GUN_PATH "assets/shoot.xpm"
-# define STANDING_GUN_PATH "assets/hold.xpm" 
 # define AIM_SYMBOL_PATH "assets/target.xpm"
+# define SHOOTING_PISTOL_PATH "assets/hold.xpm"
+# define STANDING_PISTOL_PATH "assets/shoot.xpm" 
+# define STANDING_SNIPER_PATH "assets/shooting_sniper.xpm"//TODO: check this
+# define SHOOTING_SNIPER_PATH "assets/standing_sniper.xpm"
 # define SHOOT 0
 # define STAND 1
+#define PISTOL 2
+#define SNIPER 0
 
 # define TEXTURE_WIDTH 30
 # define TEXTURE_HEIGHT 30
@@ -70,6 +74,7 @@ typedef struct s_quadri_long
 	long	d;
 }	t_quadri_long;
 
+
 enum {
 	ON_KEYDOWN = 2,
 	ON_KEYUP = 3,
@@ -90,7 +95,8 @@ enum {
 	KEY_RIGHT = 124,
 	KEY_UP = 126,
 	KEY_DOWN = 125,
-	KEY_SPACE = 49
+	KEY_SPACE = 49,
+	KEY_R = 15,
 };
 
 typedef struct s_pair_double
@@ -177,17 +183,23 @@ typedef struct s_ray
     bool	isRayFacingRight;
 }	t_ray;
 
+typedef struct s_weapons
+{
+	t_texture	gun[4];
+	t_texture	aim_symbol;
+	int			gun_frames;
+	int			gun_state;
+	int			gun_type;//this can be PISTOL or SNSIPER
+}	t_weapons;
+
 typedef struct s_cub_manager
 {
 	t_map_manager	*map;
 	t_mlx_manager	mlx_manager;
 	t_player		player;
 	t_ray			*rays;
-	t_texture		gun[2];
-	int				gun_state;//0 shoot 1 stand , check load 
-	int				gun_frames;
 	int				mouse_x;
-	t_texture		aim_symbol;
+	t_weapons		weapons;
 }	t_cub_manager;
 
 char	**ft_split(char *s, char c);

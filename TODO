@@ -1,12 +1,1 @@
-- check the asset for direction to only include two strings
-- check for duplicated colors
-- delete the old map
-- remove the ft_strlen for everyloop
-- init ray directions (is facing up/down/right/left)
-- refactor all raycasting functions calls
-- check if all the attributes are initialized
-- intersection not working properly in the joint of two walls
-
-
-- init gun index and change the value of the state of it
-- call mlx put image to window in the right place
+- check why guns state is incorrect
