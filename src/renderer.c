@@ -6,7 +6,7 @@
 /*   By: yakhoudr <yakhoudr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 10:26:42 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/07 16:44:43 by yakhoudr         ###   ########.fr       */
+/*   Updated: 2023/02/07 19:22:54 by yakhoudr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,18 +304,10 @@ void	move_player(t_cub_manager *manager)
 		if (x >= 0 && x < manager->map->map_width && y >= 0 && y < manager->map->map_height && manager->map->map[y][x] == '1')
 		{
 			increment = false;
-			false;
+			break;
 		}
 		nx += xIncrement;
 		ny += yIncrement;
-	}
-	if (increment)
-	{
-		manager->player.y = db;
-		manager->player.x = da;
-		// printf("%lf\n", (ny));
-		// puts("here");
-	
 	}
 	if (manager->player.rotate)
 	{
@@ -325,6 +317,18 @@ void	move_player(t_cub_manager *manager)
 		normalize_angle(&manager->player.rotation_angle);
 		
 	}		
+	if (increment)
+	{
+		// printf("<%c>\n", manager->map->map[(int) (manager->player.y / TILE_SIZE)][(int)(da / TILE_SIZE)]);
+		// printf("<%c>\n", manager->map->map[(int)(db / TILE_SIZE)][(int)(manager->player.x / TILE_SIZE)]);
+		if (manager->map->map[(int) (manager->player.y / TILE_SIZE)][(int)(da / TILE_SIZE)] == '1'  && manager->map->map[(int)(db / TILE_SIZE)][(int)(manager->player.x / TILE_SIZE)] == '1')
+			return ;
+			manager->player.y = db;
+			manager->player.x = da;		
+		// printf("%lf\n", (ny));
+		// puts("here");
+	
+	}
 }
 
 int draw(t_cub_manager *manager)
@@ -350,7 +354,7 @@ int draw(t_cub_manager *manager)
 	if (goal <= get_time(manager))
 	{
 		goal = get_time(manager) + 1000;
-		printf("fps: %ld\n", frames);
+		// printf("fps: %ld\n", frames);
 		frames = 0;
 	}
 	manager->time.delta_time = (get_time(manager) - manager->time.lastTick) / 1000.0;

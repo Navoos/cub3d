@@ -6,7 +6,7 @@
 /*   By: yakhoudr <yakhoudr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 16:02:45 by yakhoudr          #+#    #+#             */
-/*   Updated: 2023/02/07 16:45:32 by yakhoudr         ###   ########.fr       */
+/*   Updated: 2023/02/07 18:57:33 by yakhoudr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,8 @@
 # define WEST 3
 # define DOOR 4
 # define HEIGHT 720
-# define R_SPEED (TILE_SIZE * 2)
-# define W_SPEED (TILE_SIZE * 2)
+# define R_SPEED (TILE_SIZE * 3)
+# define W_SPEED (TILE_SIZE * 3)
 # define MINIMAP_WIDTH 10
 # define MINIMAP_HEIGHT 5
 # define MINIMAP_X 10
